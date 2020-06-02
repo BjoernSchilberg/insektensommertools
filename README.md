@@ -1,5 +1,17 @@
 # Insektensommertools
 
+## Building
+
+```shell
+go build
+```
+
+## Using
+
+```shell
+./insektensommertools -config juni2020-06.env
+```
+
 ## Campain dates
 
 - 29.05.2020-14.05.2020
