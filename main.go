@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -97,10 +98,15 @@ func main() {
 	ftpPath := os.Getenv("FTP_PATH")
 
 	data := readCSVFromURL(url)
-	buf := exportXLSX(data, action, nil)
-	storeToFTP(ftpHost, ftpUser, ftpPassword, ftpPath, action+".xlsx", *buf)
-	//_, errWrite := buf.WriteTo(os.Stdout)
+	xlsx := exportXLSX(data, action, nil)
+	//_, errWrite := xlsx.WriteTo(os.Stdout)
 	//errCheck(errWrite)
+	storeToFTP(ftpHost, ftpUser, ftpPassword, ftpPath, action+".xlsx", *xlsx)
+	csvHeader := []string{"kopfid", "artname", "anzahl", "lebensraum", "bundesland", "taxon", "datum", "fundort", "gattung", "lng", "lat"}
+	csv := exportCSV(data, csvHeader)
+	//_, errWrite := csv.WriteTo(os.Stdout)
+	//errCheck(errWrite)
+	storeToFTP(ftpHost, ftpUser, ftpPassword, ftpPath, action+".csv", csv)
 
 }
 
@@ -124,6 +130,53 @@ func storeToFTP(ftpHost string, ftpUser string, ftpPassword string, ftpPath stri
 	if err := c.Quit(); err != nil {
 		log.Fatal(err)
 	}
+
+}
+
+func exportCSV(lines []map[string]interface{}, header []string) bytes.Buffer {
+	log.Println("Start exporting to csv.")
+	var buf bytes.Buffer
+	out := csv.NewWriter(&buf)
+
+	if header == nil {
+		header = createHeader(lines)
+	}
+
+	var record []string
+	record = make([]string, len(header))
+
+	if err := out.Write(header); err != nil {
+		log.Fatalf("Error writing CSV: %v\n", err)
+	}
+
+	for line, entry := range lines {
+		for i, name := range header {
+			var value string
+			if v, found := entry[name]; found {
+				switch t := v.(type) {
+				case string:
+					value = fmt.Sprintf("%s", t)
+				case float64:
+					value = strconv.FormatFloat(t, 'f', -1, 64)
+				case int:
+					value = fmt.Sprint(t)
+				}
+			} else {
+				log.Printf("key %v not found in line %d.\n", name, line+1)
+			}
+			record[i] = value
+		}
+		if err := out.Write(record); err != nil {
+			log.Fatalf("Error writing CSV: %v\n", err)
+		}
+	}
+	out.Flush()
+	if err := out.Error(); err != nil {
+		log.Fatalf("Error flushing CSV: %v\n", err)
+	}
+
+	log.Println("Finish exporting to csv.")
+	return buf
 
 }
 
@@ -159,7 +212,7 @@ func exportXLSX(records []map[string]interface{}, sheetName string, header []str
 				case string:
 					xlsx.SetCellStr(sheetName, colNames[cellIndex]+rowS, t)
 				case float64:
-					xlsx.SetCellStr(sheetName, colNames[cellIndex]+rowS, fmt.Sprint(t))
+					xlsx.SetCellStr(sheetName, colNames[cellIndex]+rowS, strconv.FormatFloat(t, 'f', -1, 64))
 				case int:
 					xlsx.SetCellStr(sheetName, colNames[cellIndex]+rowS, fmt.Sprint(t))
 				default:
