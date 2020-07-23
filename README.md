@@ -12,6 +12,12 @@ go build
 ./insektensommertools -config juni2020-06.env
 ```
 
+## Example crontab entry
+
+```cron
+*/15 * * * * cd /home/intevation/insekten && ./insektensommertools -config august2020-08.env > /tmp/cron_insekten.log 2>&1
+```
+
 ## Campain dates
 
 - 01.06.2018-18.06.2018
