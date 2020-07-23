@@ -1,5 +1,12 @@
 # Insektensommertools
 
+- [Insektensommertools](#insektensommertools)
+  - [Building](#building)
+  - [Using](#using)
+  - [Example env](#example-env)
+  - [Example crontab entry](#example-crontab-entry)
+  - [Campain dates](#campain-dates)
+
 ## Building
 
 ```shell
@@ -10,6 +17,17 @@ go build
 
 ```shell
 ./insektensommertools -config juni2020-06.env
+```
+
+## Example env
+
+```env
+AKTION="beobachtungen-2020-08"
+URL="https://naturgucker.de/mobil/?modul=beobachtungenNABU&email1=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&md5=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&offset=0&zeilen=0&service=XXXXXXXXXX&datumvon=31.07.2020&datumbis=16.08.2020"
+FTP_HOST=XX.XXX.XXX.XXX:21
+FTP_USER=XXXXXXXXX
+FTP_PASSWORD=XXXXXXXXXXXXXXXXXX
+FTP_PATH=insektensommer/data/
 ```
 
 ## Example crontab entry
